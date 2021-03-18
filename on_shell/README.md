@@ -198,7 +198,7 @@ some_code_parser ()
   - `get_some_code` 完全没必要有副作用
     (此处*标准输出*和*标准错误*都不算副作用,不然SHell上没法返回*256以内数字*以外的信息了)
   - `some_code_parser` 随意
-    (比如sql的话在*增/删/改*上就有副作用)
+    (比如sql的话在*增*/*删*/*改*上就有副作用)
 
 需要注意的是：
 
@@ -281,5 +281,6 @@ function some_code_runinpar ()
 
 some_code_runinpar 4 ;
 ```
+
 
 
