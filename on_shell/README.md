@@ -1,3 +1,29 @@
+# simple demo
+
+```bash
+seq 32 | xargs -n8 | while read linep ; do for e in $linep ; do { sleep $e ; echo $e ; } & done | cat ; done | awk '{print"queue-par: "$0}'
+### 顺序执行几个小组 组内并发
+```
+
+```bash
+seq 32 | xargs -n8 | while read linep ; do for e in $linep ; do { sleep $e ; echo $e ; } ; done & done | awk '{print"par-queue: "$0}'
+### 并发执行几个小组 组内顺序
+```
+
+第一个的 `8` 就是并发度但第二个的不是
+
+不过第二个的好处在于打开进程的次数等于并发度：第一个只能确保同时打开的进程在给定并发度以内
+
+因此:
+
+- 第一个的执行情况会是：有8个进程，有7个进程，有6个，...，有1个，又有8个，...
+- 第一个的执行情况会是：一直有32/8个进程，每个进程里不停地 loop ...
+
+有一个结合二者优点的方案，即把 `seq 32 | xargs -n8` 的输出进行一下行列转换。
+
+详情和使用示例见下文。
+
+
 # desc
 
 我在 SHell 的并发的思路就是：先制造队列，再依据队列执行。
@@ -63,7 +89,7 @@ seq -f%02g 32 |
     END{for(i in a){for(j in a[i]){printf a[i][j]" "};printf"\n"}}' ;
 ```
 
-更多它的介绍见： [awk-rows-fields.demo.sh](./awk-rows-fields.demo.sh)
+更多见： [awk-rows-fields.demo.sh](./awk-rows-fields.demo.sh)
 
 out:
 
@@ -133,6 +159,8 @@ function some_code_runinpar ()
 - `some_code_parser`: 用于通过*匿名管道*读取*标准输入*的内容并解释它们
 
 
+更多见： [parallel-in-eight.demo.sh](./parallel-in-eight.demo.sh)
+
 
 ### some code eg
 
@@ -178,4 +206,80 @@ some_code_parser ()
 特别是 `parser` ，也就是 `some code` 这种*语言*的*解释器*，它应该是最不可能是在 SHell 上就能定义的了吧... (当然我不是说绝对不可能:万一是把啥封装了呢...)
 
 总之，这部分的意思就是，之后会用到 `get_some_code` 和 `some_code_parser` 这两个命令，而这部分只是简单说下它们都是有着**哪类**功能。
+
+
+# simple demo 2
+
+一个简单的可用示例
+
+```bash
+get_some_code ()
+{
+    for i in $(seq "$1") ;
+    do
+        echo "sleep $1 ; echo '[$i/$((10#$1))]: $1 in [$2] , sleep time: $((10#$1))s'" ;
+    done ;
+} ;
+
+some_code_parser ()
+{
+    bash ${1:-/dev/stdin} ;
+} ;
+```
+
+```bash
+function some_code_runinpar ()
+{
+    par_num="${1:-8}"
+    seq -f%02g 32 |
+        xargs -n"$par_num" |
+        awk '
+        BEGIN{PROCINFO["sorted_in"]="@ind_num_asc"}
+        {for(f=1;f<=NF;f++)a[f][NR]=$f}
+        END{for(i in a){for(j in a[i]){printf a[i][j]" "};printf"\n"}}' |
+        {
+            while read linepipe ;
+            do
+                for elem in $linepipe ;
+                do
+                    get_some_code $elem "$linepipe" ;
+                done |
+                    some_code_parser /dev/stdin &
+            done ;
+            wait ;
+        } ;
+} ;
+
+some_code_runinpar 4 ;
+```
+
+或者，下面这个就是把 `{ ... & done ; wait ; }` 换成了 `... & done | cat`
+
+它也有一定的阻塞效果，但仅仅在后台进程有标准输出的时候才有效果。
+
+好处是退出进程就会杀死后台。但是在部分情况下(尚未确定对这种情况的描述)，下面这个做法的打印效果并不理想，即不会按照预定时间进入日志。
+
+```bash
+function some_code_runinpar ()
+{
+    par_num="${1:-8}"
+    seq -f%02g 32 |
+        xargs -n"$par_num" |
+        awk '
+        BEGIN{PROCINFO["sorted_in"]="@ind_num_asc"}
+        {for(f=1;f<=NF;f++)a[f][NR]=$f}
+        END{for(i in a){for(j in a[i]){printf a[i][j]" "};printf"\n"}}' |
+        while read linepipe ;
+        do
+            for elem in $linepipe ;
+            do
+                get_some_code $elem "$linepipe" ;
+            done |
+                some_code_parser /dev/stdin &
+        done | cat ;
+} ;
+
+some_code_runinpar 4 ;
+```
+
 
