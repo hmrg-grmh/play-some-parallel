@@ -287,4 +287,10 @@ some_code_runinpar 4 ;
 ```
 
 
+--------
 
+分享请遵守：[署名-非商业性使用-相同方式共享](https://creativecommons.org/licenses/by-nc-sa/3.0/deed.zh)的原则。
+
+具体参见：
+[CC BY-NC-SA 3.0 CN](https://creativecommons.org/licenses/by-nc-sa/3.0/cn/)
+[CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0)
