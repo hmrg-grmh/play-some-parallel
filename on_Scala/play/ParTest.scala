@@ -1,3 +1,5 @@
+package play
+
 object ParTest extends App
 {
     (1 to 9).toList.zip(11 to 19)
