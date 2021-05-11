@@ -286,6 +286,28 @@ function some_code_runinpar ()
 some_code_runinpar 4 ;
 ```
 
+# simple demo xargs
+
+ssh:
+
+```bash
+awk /clustertest/{print\$1} /etc/hosts | xargs -P1 -i{x} ssh -n {x} bash\ -c\ 'hostname -i'
+```
+
+kube:
+
+```bash
+kubectl get po | awk /clustertest/{print\$1} | xargs -P0 -i{x} kubectl exec {x} -- bash -c 'echo '"'"{x}"'"' ; hostname'
+```
+
+把上面的 `clustertest` 部分换成你想要匹配的 hostname 关键字即可使用。
+
+尝试一下可以看出，用 xargs 的好处在于，并发度非常容易控制，要停止也非常容易。
+并且，即便在并发的情况下，用 xargs 仍然能够让同一个进程的打印能够在一起，而不是像自己写放后台并发那样全乱套。
+
+**上述两者都可以抽象成函数，让关键字和命令都做参数传递进去。**
+(具体的何以自己试试看~)
+
 
 --------
 
