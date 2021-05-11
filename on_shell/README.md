@@ -291,6 +291,7 @@ some_code_runinpar 4 ;
 ssh:
 
 ```bash
+# simple e.g.
 awk /clustertest/{print\$1} /etc/hosts | xargs -P1 -i{x} ssh -n {x} 'echo '"'"{x}"'"' >&2 ; ''hostname -i'
 awk /clustertest/{print\$1} /etc/hosts | xargs -P1 -i{x} ssh -n {x} bash\ -c\ "'"'echo '"'"{x}"'"' >&2 ; ''hostname -i'"'"
 # if do not need passwd
@@ -303,6 +304,7 @@ awk /clustertest/{print\$1} /etc/hosts | xargs -P1 -i{x} ssh -n {x} bash\ -c\ 'e
 kube:
 
 ```bash
+# simple e.g.
 kubectl get po | awk /clustertest/{print\$1} | xargs -P0 -i{x} kubectl exec {x} -- bash -c 'echo '"'"{x}"'"' ; hostname'
 # even:
 kubectl get po | awk /cdhtest/{print\$1} | xargs -P0 -i{x} kubectl exec {x} -- bash -c 'echo '"'"{x}"'"' >&2 ; hostname'
