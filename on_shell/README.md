@@ -291,13 +291,23 @@ some_code_runinpar 4 ;
 ssh:
 
 ```bash
-awk /clustertest/{print\$1} /etc/hosts | xargs -P1 -i{x} ssh -n {x} bash\ -c\ 'hostname -i'
+awk /clustertest/{print\$1} /etc/hosts | xargs -P1 -i{x} ssh -n {x} 'echo '"'"{x}"'"' >&2 ; ''hostname -i'
+awk /clustertest/{print\$1} /etc/hosts | xargs -P1 -i{x} ssh -n {x} bash\ -c\ "'"'echo '"'"{x}"'"' >&2 ; ''hostname -i'"'"
+# if do not need passwd
+awk /clustertest/{print\$1} /etc/hosts | xargs -P0 -i{x} ssh -n {x} bash\ -c\ "'"'echo '"'"{x}"'"' >&2 ; ''hostname -i'"'"
+
+# this will have problem:
+awk /clustertest/{print\$1} /etc/hosts | xargs -P1 -i{x} ssh -n {x} bash\ -c\ 'echo '"'"{x}"'"' >&2 ; ''hostname -i'
 ```
 
 kube:
 
 ```bash
 kubectl get po | awk /clustertest/{print\$1} | xargs -P0 -i{x} kubectl exec {x} -- bash -c 'echo '"'"{x}"'"' ; hostname'
+# even:
+kubectl get po | awk /cdhtest/{print\$1} | xargs -P0 -i{x} kubectl exec {x} -- bash -c 'echo '"'"{x}"'"' >&2 ; hostname'
+{ kubectl get po | awk /cdhtest/{print\$1} | xargs -P0 -i{x} kubectl exec {x} -- bash -c 'echo '"'"{x}"'"' >&2 ; hostname' ; } >/dev/null
+{ kubectl get po | awk /cdhtest/{print\$1} | xargs -P0 -i{x} kubectl exec {x} -- bash -c 'echo '"'"{x}"'"' >&2 ; hostname' ; } 2>/dev/null
 ```
 
 把上面的 `clustertest` 部分换成你想要匹配的 hostname 关键字即可使用。
