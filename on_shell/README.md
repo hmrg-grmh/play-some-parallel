@@ -320,7 +320,7 @@ kubectl get po | awk /cdhtest/{print\$1} | xargs -P0 -i{x} kubectl exec {x} -- b
 **上述两者都可以抽象成函数，让关键字和命令都做参数传递进去。**
 (具体的何以自己试试看~)
 
-我的例子 (基于 `kubectl` ):
+我的例子 (不想弄免密所以基于 `kubectl` ):
 
 ```bash
 kube_alldo ()
